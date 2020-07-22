@@ -1,0 +1,316 @@
+---
+title: "R Notebook"
+Author: Peilin Qiu
+output: html_notebook
+---
+
+# Setting up
+```{r}
+rm(list=ls())
+getwd()
+setwd("/Users/peilinqiu/Desktop/CEFP")
+```
+
+```{r}
+survey=read.csv("Membership Information Update April 21 2020.csv", header = TRUE)
+```
+
+Membership Information Update April 21 2020.csv
+
+# Use package dplyr and ggplot2
+```{r}
+library(tidyverse)
+library(ggplot2)
+```
+
+# browse the data
+```{r}
+head(survey)
+colnames(survey)
+```
+
+### Data Cleaning
+# Rename the column name
+```{r}
+library(reshape)
+survey=rename(survey, c("Name.姓名" = "Name", 
+                 "Email.联系邮箱" = "Email",
+                 "Phone.联系电话" = "Phone",
+                 "Preferred.method.of.contact..Please.include.your.contact.information.if.you.select.Other..常用联系方式.其他请注明联系方式." = "PrefContact",
+                 "Current.country..area..of.your.organization...所在国家..地区." = "CurrCountry",
+                 "Affiliation.科研单位" = "Affiliation",
+                 "Current.position.目前职位" = "CurrPosition",
+                 "Research.interests.研究兴趣" = "ResearchInterest",
+                 "Career.goal..What.s.your.short.term.career.goal..职业规划.您近期有什么职业规划." = "CareerGoal",
+                 "Are.you.interested.in.participating.in.the.virtual.seminar..您对参加视频会议是否感兴趣." = "InterestedVirSem",
+                 "Please.indicate.why.if.your.answer.is.No.or.Maybe.in.the.question.above..请指出您上一题中选择不感兴趣或者看情况的原因." = "InterestedReason",
+                 "The.seminar.is.planned.to.be.held.on.Fridays.of.the.first.and.third.week.of.each.month.between.4.pm..5.pm..EST...Does.the.time.work.for.you...视频会议目前计划为每月第一周和第三周的周五下午四点到五点.美国东部时间.进行.您认为这个时间合适么." = "TimeMatch",
+                 "What.time.do.you.prefer.if.the.proposed.time.does.not.work.for.you..Please.indicate.both.the.time.and.the.day...如果以上时间不合适.您建议什么时间进行视频会议.请写下您建议的日期和时间.." = "PreferTime",
+                 "Please.rate.your.interests.among.the.following.virtual.seminar.topics...请评价您对以下视频会议主题的感兴趣程度...Selection.of.research.fields.and.research.projects..研究方向以及研究项目的选择." = "RateResearchProject",
+                 "Please.rate.your.interests.among.the.following.virtual.seminar.topics...请评价您对以下视频会议主题的感兴趣程度...Conference.proposal.writing.and.participation....会议申请和参加." = "RateConferPartic",
+                 "Please.rate.your.interests.among.the.following.virtual.seminar.topics...请评价您对以下视频会议主题的感兴趣程度...Tips.on.communicating.with.supervisors.and.collaborators..如何与导师和合作者沟通." = "RateCommuSupervisor",
+                 "Please.rate.your.interests.among.the.following.virtual.seminar.topics...请评价您对以下视频会议主题的感兴趣程度...Applying.for.research.grants..scholarships.or.other.fundings..申请科研基金.博士奖学金.以及其他项目.奖项申请." = "RateApplyGrants",
+                 "Please.rate.your.interests.among.the.following.virtual.seminar.topics...请评价您对以下视频会议主题的感兴趣程度...Experience.sharing.on.job.market...求职招聘经验分享." = "RateJobMKT",
+                 "Please.rate.your.interests.among.the.following.virtual.seminar.topics...请评价您对以下视频会议主题的感兴趣程度...Experience.sharing.on.pre.tenure.research..teaching..service..and.life...终身教职前的科研.授课.以及服务的经验." = "RateTenureTeach",
+                 "Please.rate.your.interests.among.the.following.virtual.seminar.topics...请评价您对以下视频会议主题的感兴趣程度...Time.management.in.different.career.stages..不同阶段的时间管理." = "TimeMgt",
+                 "Please.rate.your.interests.among.the.following.virtual.seminar.topics...请评价您对以下视频会议主题的感兴趣程度...Research.presentations..研究分享." = "RateResearchPresent",
+                 "List.other.topics.that.might.interest.you.除上面所列内容.您还对其它什么主题感兴趣" = "ListOtherTopics",
+                 "Are.you.interested.in.presenting.your.own.research.in.the.seminars...您希望在视频会议上展示您自己的研究么." = "PresentYourResearch",
+                 "Do.you.have.other.expectations.or.suggestions.for.CEFP.virtual.seminars...您对于CEFP接下来的视频讨论会有什么其它期望或者建议." = "ExpectSuggest",
+                 "Please.rate.the.following.supports.that.you.wish.to.receive.from.CEFP.您希望从CEFP获得什么支持..Networking.with.other.education.researchers.增加同其他教育领域学者的联系." = "NetworingEdResearcher",
+                 "Please.rate.the.following.supports.that.you.wish.to.receive.from.CEFP.您希望从CEFP获得什么支持..Sharing.research.projects.and.ideas.分享自己的研究以及想法." = "ShareResearchProjectIdea",
+                 "Please.rate.the.following.supports.that.you.wish.to.receive.from.CEFP.您希望从CEFP获得什么支持..Receiving.support.and.feedbacks.from.group.members.获得其他学者的反馈和支持." = "ReceiveSupportFeedback",
+                 "Please.rate.the.following.supports.that.you.wish.to.receive.from.CEFP.您希望从CEFP获得什么支持..Finding.collaborators.in.research.寻求合作项目以及合作者." = "FindCollaboartion",
+                 "Please.rate.the.following.supports.that.you.wish.to.receive.from.CEFP.您希望从CEFP获得什么支持..Receiving.sharing.information.about.conference..employment..research.project..and.grants..分享和获得关于会议.求职招聘.课题.基金等信息." = "ReceiveSharingInfor",
+                 "What.are.other.unlisted.supports.that.you.wish.to.receive.from.CEFP...您希望从CEFP获得什么其它上题没有列出的支持." = "OtherUnlistedSupport",
+                 "We.are.also.plan.to.hold.research.group.therapy.series.besides.the.seminar.presentations..which.allow.participants.to.share.progresses.and.challenges.in.their.research..program..and.life..We.as.a.group.will.brainstorm.solutions..share.individual.experience..and.provide.motivations.to.support.other.participants..Are.you.interested.in.participate.in.the.research.group.therapy...我们计划在视频会议的展示之外组织research.group.therapy活动.在research.group.therapy中参与者将分享最近的研究.学习项目.以及生活上遇到的进展和问题.参与者将作为一个小组提出建议.思考解决方案.以及提供鼓励和支持.您对参与research.group.therapy感兴趣么." = "ResearchTherapy",
+                 "We.are.also.considering.to.organize.a.mentoring.program..Are.you.interested.in.a.mentoring.program...导师计划也在我们的考虑当中.如果这个项目被启动.您愿意参加吗." = "MetnorProg",
+                 "Are.you.willing.to.be.a.mentor.if.the.mentoring.program.is.launched..如果导师计划启动.您愿意成为导师么." = "WillingMentor",
+                 "What.other.activities.do.you.wish.CEFP.to.organize.in.the.future..您期望.CEFP.组织其它哪些形式的活动." = "OtherActivities"
+                 ))
+```
+
+# Check the adjusted variable names
+```{r}
+head(survey)
+colnames(survey)
+```
+
+# Delete the last column
+```{r}
+survey=survey[, -35]
+```
+
+```{r}
+table(survey$PrefContact)
+```
+
+# Update the value in PrefContact
+```{r}
+survey = survey %>% mutate(PrefContact=recode(PrefContact, `we chat： 15117945174` = "Wechat"))
+```
+
+
+```{r}
+table(survey$CurrCountry)
+```
+
+# Update the value in CurrCountry
+```{r}
+survey = survey %>% mutate(CurrCountry=recode(CurrCountry, 
+                                     `America`= "United States", 
+                                     `Austin, Texas, USA` = "United States", 
+                                     `U.S.` = "United States", 
+                                     `UNITED STATES` = "United States", 
+                                     `US` = "United States",
+                                     `US_Pennsylvania` = "United States", 
+                                     `USA` = "United States", 
+                                     `Utah USA` = "United States", 
+                                     `美国` = "United States",
+                                     `China` = "Mainland China",
+                                     `中国` = "Mainland China",
+                                     `中国北京` = "Mainland China",
+                                     `中国徐州` = "Mainland China",
+                                     `英国` = "UK",
+                                     `台灣` = "Taiwan"
+                                     ))
+```
+
+
+```{r}
+table(survey$CurrCountry)
+```
+
+
+```{r}
+table(survey$Affiliation)
+```
+
+# Update the affiliation
+```{r}
+survey = survey %>% mutate(Affiliation=recode(Affiliation, 
+                                     `密歇根州立大学`= "Michigan State University",
+                                     `密歇根州立大学教育学院测量与定量分析方法`= "Michigan State University",
+                                     `University of Alabama (08/2017-07/2020); University of Florida (08/2020 - )`= "University of Alabama",
+                                     `宾夕法尼亚大学（访学，本人单位是天津财经大学）`= "University of Pennsylvania",
+                                     `University of Wisconsin--Madison`= "University of Wisconsin-Madison",
+                                     `UW-Madison`= "University of Wisconsin-Madison",
+                                     `UC Irvine`= "University of California, Irvine",
+                                     `Teachers College Columbia University / University of Delaware (after August 2020)`= "University of Delaware",
+                                     `UC Irvine`= "University of California, Irvine",
+                                     `北京大学教育学院`= "北京大学",
+                                     `Department of Economics, University of Rochester`= "University of Rochester",
+                                     `U of rochester`= "University of Rochester",
+                                     `Tsinghua University`= "清华大学"
+                                     ))
+```
+
+```{r}
+table(survey$Affiliation)
+```
+
+# Update the CurrPosition
+
+```{r}
+table(survey$CurrPosition)
+```
+
+# Update the ResearchInterest
+```{r}
+
+```
+
+# Update the CareerGoal
+```{r}
+table(survey$CareerGoal)
+```
+
+
+```{r}
+survey = survey %>% mutate(CareerGoal=recode(CareerGoal, 
+                                     `Already employed or tenured and wish to support junior researchers/已获得教职或其他岗位工作，希望扶持其他青年学者┋Already employed or tenured and wish to advance your career /已获得教职或其他岗位工作，希望加强职业发展`= "Already employed or tenured and wish to support junior researchers/已获得教职或其他岗位工作，希望扶持其他青年学者, Already employed or tenured and wish to advance your career /已获得教职或其他岗位工作，希望加强职业发展",
+                                     `Apply for Ph.D. programs/申请博士项目┋Apply for research or teaching positions in higher eduction or research institutes/申请高校教师或科研岗位`="Apply for Ph.D. programs/申请博士项目, Apply for research or teaching positions in higher eduction or research institutes/申请高校教师或科研岗位",
+                                     `Apply for postdoctoral programs/申请博士后项目┋Already employed or tenured and wish to advance your career /已获得教职或其他岗位工作，希望加强职业发展`="Apply for postdoctoral programs/申请博士后项目, Already employed or tenured and wish to advance your career /已获得教职或其他岗位工作，希望加强职业发展",
+                                     `Apply for postdoctoral programs/申请博士后项目┋Apply for research or teaching positions in higher eduction or research institutes/申请高校教师或科研岗位`="Apply for postdoctoral programs/申请博士后项目, Apply for research or teaching positions in higher eduction or research institutes/申请高校教师或科研岗位",
+                                     `Apply for postdoctoral programs/申请博士后项目┋Apply for research or teaching positions in higher eduction or research institutes/申请高校教师或科研岗位┋Work for government/进入政府和政策规划研究`="Apply for postdoctoral programs/申请博士后项目, Apply for research or teaching positions in higher eduction or research institutes/申请高校教师或科研岗位, Work for government/进入政府和政策规划研究",
+                                     `Apply for research or teaching positions in higher eduction or research institutes/申请高校教师或科研岗位┋Work for government/进入政府和政策规划研究`="Apply for research or teaching positions in higher eduction or research institutes/申请高校教师或科研岗位, Work for government/进入政府和政策规划研究"
+                                     ))
+```
+
+
+```{r}
+table(survey$CareerGoal)
+```
+
+# List the variables
+```{r}
+head(survey)
+colnames(survey)
+```
+
+```{r}
+table(survey$InterestedVirSem)
+```
+
+```{r}
+table(survey$InterestedReason)
+```
+
+```{r}
+table(survey$TimeMatch)
+```
+
+```{r}
+table(survey$PreferTime)
+```
+```{r}
+table(survey$RateResearchProject)
+```
+
+```{r}
+table(survey$RateConferPartic)
+```
+
+```{r}
+table(survey$RateCommuSupervisor)
+```
+
+
+```{r}
+table(survey$RateApplyGrants)
+```
+
+```{r}
+table(survey$RateJobMKT)
+```
+
+```{r}
+table(survey$RateTenureTeach)
+```
+
+```{r}
+table(survey$TimeMgt)
+```
+
+```{r}
+table(survey$RateResearchPresent)
+```
+
+```{r}
+table(survey$ListOtherTopics)
+```
+
+```{r}
+table(survey$PresentYourResearch)
+```
+
+```{r}
+table(survey$ExpectSuggest)
+```
+
+```{r}
+table(survey$NetworingEdResearcher)
+```
+
+```{r}
+table(survey$ShareResearchProjectIdea)
+```
+
+```{r}
+table(survey$ReceiveSupportFeedback)
+```
+
+```{r}
+table(survey$FindCollaboartion)
+```
+
+```{r}
+table(survey$ReceiveSharingInfor)
+```
+
+```{r}
+table(survey$OtherUnlistedSupport)
+```
+
+```{r}
+table(survey$ResearchTherapy)
+```
+
+```{r}
+table(survey$MetnorProg)
+```
+
+```{r}
+table(survey$WillingMentor)
+```
+
+```{r}
+table(survey$OtherActivities)
+```
+
+```{r}
+write.csv(survey, file="data_cleaning.csv")
+```
+
+
+```{r}
+write.table(survey, file="data_cleaning.xlsx")
+```
+
+
+
+```{r}
+install.packages("xlsx")
+```
+
+```{r}
+library(rJava)
+library(xlsx)
+```
+
+
+```{r}
+ggplot(survey, aes(PrefContact))
+```
+
+
